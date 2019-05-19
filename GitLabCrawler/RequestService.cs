@@ -54,7 +54,7 @@ namespace GitLabCrawler
             }
         }
 
-        public List<GitLabCommit> GetProjectCommits(long project_id)
+        public List<GitLabCommit> GetAllProjectCommits(long project_id)
         {
             try
             {
@@ -75,9 +75,37 @@ namespace GitLabCrawler
                     page++;
                 } while (page <= pages);
 
-                foreach(GitLabCommit commit in totalCommits)
+                foreach (GitLabCommit commit in totalCommits)
                 {
-                    //commit.branches = GetCommitBranches(project_id, commit.short_id);
+                    commit.branches = GetCommitBranches(project_id, commit.short_id);
+                    commit.project_id = project_id;
+                }
+
+                return totalCommits;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+        public List<GitLabCommit> Get20ProjectCommits(long project_id)
+        {
+            try
+            {
+                List<GitLabCommit> totalCommits = new List<GitLabCommit>();
+                List<GitLabCommit> commits;
+                WebRequest req = WebRequest.Create("https://gitlab.com/api/v4/projects/" + project_id + "/repository/commits" + "?private_token=" + privateToken + "&per_page=20");
+                WebResponse resp = req.GetResponse();
+                StreamReader stream = new StreamReader(resp.GetResponseStream());
+                string response = stream.ReadToEnd();
+                stream.Close();
+                commits = JsonConvert.DeserializeObject<List<GitLabCommit>>(response);
+                totalCommits.AddRange(commits);
+
+                foreach (GitLabCommit commit in totalCommits)
+                {
+                    commit.branches = GetCommitBranches(project_id, commit.short_id);
                     commit.project_id = project_id;
                 }
 
@@ -94,13 +122,13 @@ namespace GitLabCrawler
         {
             try
             {
-                WebRequest req = WebRequest.Create("https://gitlab.com/api/v4/projects/" + project_id + "/repository/commits/"+ commit_id + "/refs?private_token=" + privateToken + "&per_page=100");
+                WebRequest req = WebRequest.Create("https://gitlab.com/api/v4/projects/" + project_id + "/repository/commits/" + commit_id + "/refs?private_token=" + privateToken + "&per_page=100");
                 StreamReader stream = new StreamReader(req.GetResponse().GetResponseStream());
                 string response = stream.ReadToEnd();
                 stream.Close();
                 List<dynamic> refs = JsonConvert.DeserializeObject<List<dynamic>>(response);
                 string branches = "";
-                foreach(var refer in refs)
+                foreach (var refer in refs)
                 {
                     if (refer.type == "branch") branches += refer.name + " ";
                 }
