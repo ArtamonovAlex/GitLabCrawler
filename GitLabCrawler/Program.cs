@@ -13,7 +13,8 @@ namespace GitLabCrawler
     {
         static int Main(string[] args)
         {
-            string privateToken = "oQykY3_B5miv4xCtyD94";
+            string privateToken = File.ReadAllText("auth-token.txt", Encoding.UTF8);
+            string connectionData = File.ReadAllText("connection-data.txt", Encoding.UTF8);
             if (args.Length > 2 || args.Length < 1) {
                 Console.WriteLine("Wrong amount of attributes. Usage GitLabCrawler.exe projectId 20/all");
                 return -1;
@@ -28,7 +29,7 @@ namespace GitLabCrawler
             }
 
             RequestService reqService = new RequestService(privateToken);
-            DatabaseService dbService = new DatabaseService();
+            DatabaseService dbService = new DatabaseService(connectionData);
 
             Console.WriteLine("Getting info about project " + project_id + "...");
             GitLabProject project = reqService.GetProject(project_id);

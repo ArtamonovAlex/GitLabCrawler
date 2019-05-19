@@ -9,10 +9,9 @@ namespace GitLabCrawler
 {
     public class DatabaseService
     {
-        private string connectionString = "Server=localhost;Port=9999;User Id=s242274;Password=bld868;Database=studs;";
         private NpgsqlConnection connection;
 
-        public DatabaseService()
+        public DatabaseService(string connectionString)
         {
             connection = new NpgsqlConnection(connectionString);
         }
